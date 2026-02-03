@@ -42,16 +42,14 @@ navLinks.forEach((link) => {
 });
 
 
-// Contact Form Handler
+// Contact Form Handler - Client-side validation only (submits to Formspree)
 const contactForm = document.getElementById("contact-form");
 const formStatus = document.getElementById("form-status");
 const submitBtn = document.getElementById("submit-btn");
 
 if (contactForm) {
-  contactForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    // Clear previous errors and status
+  contactForm.addEventListener("submit", (e) => {
+    // Clear previous errors
     document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
     formStatus.textContent = "";
     formStatus.className = "form-status";
@@ -67,6 +65,7 @@ if (contactForm) {
     // Validate form
     const errors = validateForm(formData);
     if (Object.keys(errors).length > 0) {
+      e.preventDefault(); // Only prevent if validation fails
       Object.keys(errors).forEach(field => {
         const errorEl = document.getElementById(`${field}-error`);
         if (errorEl) errorEl.textContent = errors[field];
@@ -74,48 +73,11 @@ if (contactForm) {
       return;
     }
     
-    // Show loading state
+    // If validation passes, show loading state and let form submit naturally to Formspree
     submitBtn.disabled = true;
     submitBtn.textContent = "Sending...";
     formStatus.textContent = "Sending your message...";
     formStatus.className = "form-status loading";
-    
-    try {
-      // Send to backend API
-      const apiUrl = localStorage.getItem("apiUrl") || "http://localhost:8000/api";
-      const response = await fetch(`${apiUrl}/contact/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Success
-        formStatus.textContent = "✓ Message sent successfully! I'll get back to you soon.";
-        formStatus.className = "form-status success";
-        contactForm.reset();
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          formStatus.textContent = "";
-        }, 5000);
-      } else {
-        // Server error
-        formStatus.textContent = data.error || "Failed to send message. Please try again.";
-        formStatus.className = "form-status error";
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      formStatus.textContent = "Error sending message. Please check your connection and try again.";
-      formStatus.className = "form-status error";
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Send Message";
-    }
   });
 }
 
