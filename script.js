@@ -47,6 +47,16 @@ const contactForm = document.getElementById("contact-form");
 const formStatus = document.getElementById("form-status");
 const submitBtn = document.getElementById("submit-btn");
 
+// Reset form state on page load (fixes back button issue)
+window.addEventListener("load", () => {
+  if (contactForm && submitBtn && formStatus) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Send Message";
+    formStatus.textContent = "";
+    formStatus.className = "form-status";
+  }
+});
+
 if (contactForm) {
   contactForm.addEventListener("submit", (e) => {
     // Clear previous errors
